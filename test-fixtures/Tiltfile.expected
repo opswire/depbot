@@ -1,0 +1,16 @@
+# Tiltfile for local dev
+docker_build('myorg/frontend:9.9.9@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', './frontend')
+docker_build("myorg/backend:9.9.9@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "./backend")
+custom_build('gcr.io/myproj/api:9.9.9@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'echo ok', deps=['./api'])
+
+# Skipped, comment:
+# docker_build('commented/out:9.9.9', '.')
+
+# Bazel-style, image without tag — skipped:
+container_pull(
+    name = "alpine",
+    image = "docker.io/library/alpine",
+    tag = "3.18",
+)
+
+print("hello world")

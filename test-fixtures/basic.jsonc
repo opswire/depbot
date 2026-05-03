@@ -1,0 +1,17 @@
+{
+  // Devcontainer for VS Code / Codespaces
+  "name": "my-dev",
+  /* Multi-line
+     comment */
+  "image": "mcr.microsoft.com/devcontainers/go:1.21",
+  "containerDefinitions": [
+    {
+      "name": "web",
+      "image": "myorg/web:1.0.0"
+    },
+    {
+      "name": "non-semver",
+      "image": "ubuntu:latest"
+    }
+  ]
+}

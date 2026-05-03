@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: init
+          image: "busybox:1.35"
+      containers:
+        - name: app
+          image: registry.example.com:5000/myorg/app:2.4.1
+---
+apiVersion: helm/v3
+values:
+  image:
+    registry: docker.io
+    repository: bitnami/redis
+    tag: 7.2.0
+    digest: sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  postgresImage:
+    image:
+      repository: postgres
+      tag: "16.0"
+  templated:
+    image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+  notSemver:
+    image: "ubuntu:latest"
+---
+on: push
+jobs:
+  build:
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker://nginx:1.21-alpine
