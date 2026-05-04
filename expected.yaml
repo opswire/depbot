@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: init
+          image: "docker.io/library/busybox:3.99.0@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      containers:
+        - name: app
+          image: registry.example.com:5000/myorg/app:3.99.0@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+---
+apiVersion: helm/v3
+values:
+  image:
+    registry: docker.io
+    repository: bitnami/redis
+    tag: 3.99.0
+    digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  postgresImage:
+    image:
+      registry: gcr.io
+      repository: distroless/postgres
+      tag: "3.99.0"
+  templated:
+    image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+  notSemver:
+    image: "docker.io/library/ubuntu:latest"
+  shortForm:
+    image: "nginx:1.21"
+---
+on: push
+jobs:
+  build:
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker://gcr.io/distroless/nginx:3.99.0@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

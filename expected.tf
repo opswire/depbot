@@ -4,11 +4,11 @@ resource "kubernetes_deployment" "app" {
       spec {
         container {
           name  = "app"
-          image = "myorg/app:9.9.9@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          image = "docker.io/myorg/app:3.99.0@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         }
         container {
           name  = "sidecar"
-          image = "envoyproxy/envoy:9.9.9@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          image = "gcr.io/envoyproxy/envoy:3.99.0@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         }
       }
     }
@@ -22,5 +22,9 @@ resource "kubernetes_deployment" "app" {
 // image = "another/skipped:8.8.8"
 
 resource "non_semver" {
-  image = "ubuntu:latest"
+  image = "docker.io/library/ubuntu:latest"
+}
+
+resource "short_form" {
+  image = "nginx:1.21"
 }

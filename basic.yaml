@@ -5,30 +5,33 @@ spec:
     spec:
       initContainers:
         - name: init
-          image: "busybox:1.35"
+          image: "docker.io/library/busybox:3.5.0"
       containers:
         - name: app
-          image: registry.example.com:5000/myorg/app:2.4.1
+          image: registry.example.com:5000/myorg/app:3.4.1
 ---
 apiVersion: helm/v3
 values:
   image:
     registry: docker.io
     repository: bitnami/redis
-    tag: 7.2.0
+    tag: 3.2.0
     digest: sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   postgresImage:
     image:
-      repository: postgres
-      tag: "16.0"
+      registry: gcr.io
+      repository: distroless/postgres
+      tag: "3.16.0"
   templated:
     image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
   notSemver:
-    image: "ubuntu:latest"
+    image: "docker.io/library/ubuntu:latest"
+  shortForm:
+    image: "nginx:1.21"
 ---
 on: push
 jobs:
   build:
     steps:
       - uses: actions/checkout@v4
-      - uses: docker://nginx:1.21-alpine
+      - uses: docker://gcr.io/distroless/nginx:3.1.0

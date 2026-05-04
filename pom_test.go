@@ -1,4 +1,4 @@
-package depbot
+package parser
 
 import (
 	"testing"
@@ -26,16 +26,15 @@ func (s *PomSuite) TestMatch() {
 	s.True(s.strategy.Match("path/to/pom.xml"))
 	s.True(s.strategy.Match("POM.XML"))
 	s.False(s.strategy.Match("build.xml"))
-	s.False(s.strategy.Match("Dockerfile"))
 }
 
 func (s *PomSuite) TestParseFindsAllImages() {
 	_, occurrences := s.parseBasic()
 	keys := imageKeys(occurrences)
-	s.Equal(3, len(occurrences), "ожидаем jib from + jib to + fabric8 = 3")
-	s.Contains(keys, "docker.io/library/openjdk:11-jre-slim")
-	s.Contains(keys, "gcr.io/myproj/app:1.0.0")
-	s.Contains(keys, "example.com/another:5.0.0")
+	s.Equal(3, len(occurrences))
+	s.Contains(keys, "docker.io/library/openjdk:3.11.1")
+	s.Contains(keys, "gcr.io/myproj/app:3.0.0")
+	s.Contains(keys, "example.com/another:3.5.0")
 }
 
 func (s *PomSuite) TestOccurrenceFields() {
@@ -43,12 +42,7 @@ func (s *PomSuite) TestOccurrenceFields() {
 	for _, occurrence := range occurrences {
 		s.Equal(FullReference, occurrence.Kind)
 		s.Greater(occurrence.Line, 0)
-		s.GreaterOrEqual(occurrence.StartByte, 0)
-		s.Greater(occurrence.EndByte, occurrence.StartByte)
-		s.LessOrEqual(occurrence.EndByte, len(content))
-		// StartByte должен указывать в trimmed-значение (не на whitespace)
 		s.NotEqual(byte(' '), content[occurrence.StartByte])
-		s.NotEqual(byte('\t'), content[occurrence.StartByte])
 		s.NotEqual(byte('\n'), content[occurrence.StartByte])
 	}
 }

@@ -1,4 +1,4 @@
-package depbot
+package parser
 
 import (
 	"testing"
@@ -25,18 +25,20 @@ func (s *HCLSuite) TestMatch() {
 	s.True(s.strategy.Match("main.tf"))
 	s.True(s.strategy.Match("config.hcl"))
 	s.True(s.strategy.Match("job.nomad"))
-	s.False(s.strategy.Match("config.tf.json"), ".tf.json должен достаться JSON-стратегии")
+	s.False(s.strategy.Match("config.tf.json"))
 	s.False(s.strategy.Match("Dockerfile"))
 }
 
-func (s *HCLSuite) TestParseFindsImagesSkippingComments() {
+func (s *HCLSuite) TestParseFindsImagesSkippingCommentsAndShortForm() {
 	_, occurrences := s.parseBasic()
 	keys := imageKeys(occurrences)
-	s.Contains(keys, "docker.io/myorg/app:1.5.0")
-	s.Contains(keys, "docker.io/envoyproxy/envoy:v1.28.0")
-	s.NotContains(keys, "docker.io/fake/skipped")
-	s.NotContains(keys, "docker.io/another/skipped")
-	s.NotContains(keys, "docker.io/library/ubuntu")
+	s.Contains(keys, "docker.io/myorg/app:3.5.0")
+	s.Contains(keys, "gcr.io/envoyproxy/envoy:3.28.0")
+	for key := range keys {
+		s.NotContains(key, "skipped")
+		s.NotContains(key, "ubuntu")
+		s.NotContains(key, "library/nginx")
+	}
 }
 
 func (s *HCLSuite) TestApplyUpdatesByteForByte() {

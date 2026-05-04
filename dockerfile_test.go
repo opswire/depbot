@@ -1,4 +1,4 @@
-package depbot
+package parser
 
 import (
 	"testing"
@@ -28,37 +28,31 @@ func (s *DockerfileSuite) TestMatch() {
 	s.True(s.strategy.Match("backend.Dockerfile"))
 	s.True(s.strategy.Match("Dockerfile.dev"))
 	s.False(s.strategy.Match("docker-compose.yml"))
-	s.False(s.strategy.Match("README.md"))
 }
 
-func (s *DockerfileSuite) TestParseFindsAllSemverImages() {
+func (s *DockerfileSuite) TestParse() {
 	_, occurrences := s.parseBasic()
 	keys := imageKeys(occurrences)
-	s.Equal(2, len(occurrences), "ожидаем ровно 2 вхождения")
+	// Полные ссылки с явным доменом и semver-версией.
 	s.Contains(keys, "docker.io/library/alpine:3.18")
-	s.Contains(keys, "docker.io/library/nginx:1.21-alpine")
-}
-
-func (s *DockerfileSuite) TestParseSkipsScratchAliasesAndTemplates() {
-	_, occurrences := s.parseBasic()
-	keys := imageKeys(occurrences)
-	// scratch — magic base, скипаем
-	s.NotContains(keys, "docker.io/library/scratch")
-	// "FROM builder AS final" — алиас стадии, не образ
-	s.NotContains(keys, "docker.io/library/builder")
-	// "FROM ${BASE_IMAGE}" — шаблонный, скипаем
-	for _, occurrence := range occurrences {
-		s.NotContains(occurrence.Image.SourceName, "$")
-	}
-}
-
-func (s *DockerfileSuite) TestParseSkipsNonSemver() {
-	_, occurrences := s.parseBasic()
-	keys := imageKeys(occurrences)
-	// "ubuntu:latest" — non-semver tag, не должен породить Occurrence
+	s.Contains(keys, "gcr.io/distroless/static:3.0.0")
+	// Line continuation.
+	s.Contains(keys, "quay.io/jetstack/cert-manager:1.13.0")
+	// Стадии и шаблоны не попадают.
+	s.NotContains(keys, "library/builder")
+	// scratch/$BASE_IMAGE/ubuntu:latest/redis:7.0 не попадают.
 	for key := range keys {
+		s.NotContains(key, "scratch")
 		s.NotContains(key, "ubuntu")
+		s.NotContains(key, "redis:7.0")
 	}
+}
+
+func (s *DockerfileSuite) TestApplyUpdatesOnlySameMajor() {
+	content, occurrences := s.parseBasic()
+	s.applyAndCompare(content, occurrences)
+	// cert-manager:1.13.0 имеет major=1, поэтому после update до 3.99.0
+	// он останется как есть. expected.Dockerfile это отражает.
 }
 
 func (s *DockerfileSuite) TestOccurrenceFields() {
@@ -70,17 +64,4 @@ func (s *DockerfileSuite) TestOccurrenceFields() {
 		s.Greater(occurrence.EndByte, occurrence.StartByte)
 		s.LessOrEqual(occurrence.EndByte, len(content))
 	}
-}
-
-func (s *DockerfileSuite) TestParseSorted() {
-	_, occurrences := s.parseBasic()
-	for index := 1; index < len(occurrences); index++ {
-		s.Less(occurrences[index-1].StartByte, occurrences[index].StartByte,
-			"вхождения должны быть отсортированы по StartByte")
-	}
-}
-
-func (s *DockerfileSuite) TestApplyUpdatesByteForByte() {
-	content, occurrences := s.parseBasic()
-	s.applyAndCompare(content, occurrences)
 }

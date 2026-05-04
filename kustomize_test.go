@@ -1,4 +1,4 @@
-package depbot
+package parser
 
 import (
 	"testing"
@@ -31,23 +31,24 @@ func (s *KustomizeSuite) TestMatch() {
 
 func (s *KustomizeSuite) TestParseImagesWithNewName() {
 	_, occurrences := s.parseBasic()
-	// nginx с newName: my-registry/nginx → нормализуется в docker.io/my-registry/nginx
-	occurrence := s.requireOccurrence(occurrences, "docker.io/my-registry/nginx:1.22.0", TagOnly)
-	s.Equal("my-registry/nginx", occurrence.Image.SourceName)
+	occurrence := s.requireOccurrence(occurrences, "gcr.io/distroless/nginx:3.22.0", TagOnly)
+	s.Equal("distroless/nginx", occurrence.Image.Name)
+	s.Equal("gcr.io", occurrence.Image.Domain)
 }
 
 func (s *KustomizeSuite) TestParseImagesWithDigest() {
 	_, occurrences := s.parseBasic()
-	// redis имеет и newTag и digest — должно быть 2 Occurrence
-	s.requireOccurrence(occurrences, "docker.io/library/redis:7.2.0", TagOnly)
-	s.requireOccurrence(occurrences, "docker.io/library/redis:7.2.0", DigestOnly)
+	s.requireOccurrence(occurrences, "docker.io/library/redis:3.2.0", TagOnly)
+	s.requireOccurrence(occurrences, "docker.io/library/redis:3.2.0", DigestOnly)
 }
 
-func (s *KustomizeSuite) TestParseSkipsNonSemverNewTag() {
+func (s *KustomizeSuite) TestParseSkipsNonSemverAndBareNames() {
 	_, occurrences := s.parseBasic()
-	// "newTag: latest" — non-semver, не должен породить Occurrence
 	for _, occurrence := range occurrences {
-		s.NotEqual("myorg/app", occurrence.Image.SourceName)
+		// "myorg/app:latest" пропустить (non-semver)
+		s.NotEqual("myorg/app", occurrence.Image.Name)
+		// "bare-without-domain" — нет domain, пропустить
+		s.NotEqual("bare-without-domain", occurrence.Image.Name)
 	}
 }
 

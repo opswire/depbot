@@ -7,11 +7,11 @@
         <artifactId>jib-maven-plugin</artifactId>
         <configuration>
           <from>
-            <image>openjdk:9.9.9@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</image>
+            <image>docker.io/library/openjdk:3.11.1</image>
           </from>
           <to>
             <!-- production registry -->
-            <image>gcr.io/myproj/app:9.9.9@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</image>
+            <image>gcr.io/myproj/app:3.0.0</image>
           </to>
         </configuration>
       </plugin>
@@ -20,7 +20,7 @@
         <configuration>
           <images>
             <image>
-              <name>example.com/another:9.9.9@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</name>
+              <name>example.com/another:3.5.0</name>
             </image>
           </images>
         </configuration>

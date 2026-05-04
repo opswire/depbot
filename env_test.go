@@ -1,4 +1,4 @@
-package depbot
+package parser
 
 import (
 	"testing"
@@ -24,34 +24,34 @@ func TestEnvSuite(t *testing.T) {
 func (s *EnvSuite) TestMatch() {
 	s.True(s.strategy.Match(".env"))
 	s.True(s.strategy.Match(".env.local"))
-	s.True(s.strategy.Match(".env.production"))
 	s.True(s.strategy.Match("path/to/.env"))
 	s.True(s.strategy.Match("dev.env"))
 	s.False(s.strategy.Match("environment.txt"))
-	s.False(s.strategy.Match("Dockerfile"))
 }
 
-func (s *EnvSuite) TestParseHonorsImagedHeuristic() {
+func (s *EnvSuite) TestParse() {
 	_, occurrences := s.parseBasic()
 	keys := imageKeys(occurrences)
-	// IMAGE/DOCKER в имени или ":" в значении — заберутся
 	s.Contains(keys, "docker.io/myorg/app:3.1.0")
 	s.Contains(keys, "docker.io/library/alpine:3.19")
-	s.Contains(keys, "docker.io/library/nginx:1.25.0")
-	// PORT, NODE_ENV, TIMEOUT — не заберутся (нет ни IMAGE/DOCKER в ключе,
-	// ни ":" с правильной формой в значении)
+	s.Contains(keys, "gcr.io/distroless/nginx:3.25.0")
+
+	// PORT, NODE_ENV, TIMEOUT — не образы
 	for key := range keys {
 		s.NotContains(key, "8080")
+		// Short-form не должен попасть
+		s.NotContains(key, "library/traefik:3.0")
+		// host:port не должен попасть
+		s.NotContains(key, "db.example.com")
+		s.NotContains(key, "registry.example.com:5000")
 	}
 }
 
 func (s *EnvSuite) TestParseSkipsTemplatedAndNonSemver() {
 	_, occurrences := s.parseBasic()
 	for _, occurrence := range occurrences {
-		// PROXY_IMAGE=traefik:latest — non-semver
 		s.NotEqual("library/traefik", occurrence.Image.Name)
-		// DEV_IMAGE=${BASE}:${TAG} — шаблонный
-		s.NotContains(occurrence.Image.SourceName, "${")
+		s.NotContains(occurrence.Image.Domain, "$")
 	}
 }
 

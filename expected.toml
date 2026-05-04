@@ -1,0 +1,18 @@
+# project.toml for buildpacks
+[_]
+schema-version = "0.2"
+
+[io.buildpacks.builder]
+image = "docker.io/paketobuildpacks/builder-jammy-base:3.99.0@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+# Comment with image:
+# image = "fake/skipped:0.0.0"
+
+[tool.experimental]
+image = "ghcr.io/example/tool:3.99.0@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+[tool.non_semver]
+image = "docker.io/library/ubuntu:latest"
+
+[tool.short_form]
+image = "nginx:1.21"

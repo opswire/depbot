@@ -5,11 +5,15 @@ resources:
 
 images:
   - name: nginx
-    newName: my-registry/nginx
-    newTag: 9.9.9
+    newName: gcr.io/distroless/nginx
+    newTag: 3.99.0
   - name: redis
-    newTag: 9.9.9
+    newName: docker.io/library/redis
+    newTag: 3.99.0
     digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   - name: app
-    newName: myorg/app
+    newName: docker.io/myorg/app
     newTag: latest
+  - name: short
+    newName: bare-without-domain
+    newTag: 3.0.0

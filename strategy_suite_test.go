@@ -1,9 +1,10 @@
-package depbot
+package parser
 
 import (
 	"os"
 	"path/filepath"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -23,7 +24,9 @@ type strategySuite struct {
 }
 
 // newVersion — версия, которую тесты подставляют через ApplyUpdates.
-const newVersion = "9.9.9"
+// Major=3 совпадает с major всех валидных образов в фикстурах,
+// поэтому ApplyUpdates проходит и обновляет.
+const newVersion = "3.99.0"
 
 // newSHA256 — sha256-дайджест, который тесты подставляют через ApplyUpdates.
 const newSHA256 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -53,7 +56,7 @@ func (s *strategySuite) parseBasic() ([]byte, []*Occurrence) {
 func (s *strategySuite) applyAndCompare(content []byte, occurrences []*Occurrence) {
 	version, err := semver.NewVersion(newVersion)
 	s.Require().NoError(err)
-	updated, err := ApplyUpdates(content, occurrences, version, newSHA256)
+	updated, _, err := ApplyUpdates(content, occurrences, version, newSHA256)
 	s.Require().NoError(err, "ApplyUpdates() вернул ошибку")
 	expected := s.readFixture(s.expectedFile)
 	s.Equal(string(expected), string(updated))

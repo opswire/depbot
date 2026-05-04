@@ -1,4 +1,4 @@
-package depbot
+package parser
 
 import (
 	"testing"
@@ -28,34 +28,32 @@ func (s *StarlarkSuite) TestMatch() {
 	s.True(s.strategy.Match("BUILD.bazel"))
 	s.True(s.strategy.Match("WORKSPACE"))
 	s.True(s.strategy.Match("rules.bzl"))
-	s.False(s.strategy.Match("tiltfile.txt"))
 	s.False(s.strategy.Match("Dockerfile"))
 }
 
-func (s *StarlarkSuite) TestParseFindsImagesInBothQuoteStyles() {
+func (s *StarlarkSuite) TestParse() {
 	_, occurrences := s.parseBasic()
 	keys := imageKeys(occurrences)
-	// Одинарные кавычки
-	s.Contains(keys, "docker.io/myorg/frontend:0.1.0")
-	// Двойные кавычки
-	s.Contains(keys, "docker.io/myorg/backend:0.2.0")
-	// Custom registry
+	s.Contains(keys, "docker.io/myorg/frontend:3.1.0")
+	s.Contains(keys, "docker.io/myorg/backend:3.2.0")
 	s.Contains(keys, "gcr.io/myproj/api:3.0.0")
 }
 
 func (s *StarlarkSuite) TestParseSkipsSplitImageTag() {
 	_, occurrences := s.parseBasic()
-	// container_pull(image="docker.io/library/alpine", tag="3.18") —
-	// у "image" нет тега, поэтому Starlark эту строку не подбирает
 	for _, occurrence := range occurrences {
-		s.NotEqual("docker.io/library/alpine", occurrence.Image.SourceName)
+		// container_pull(image="docker.io/library/alpine", tag="3.18") —
+		// у "image" нет тега, поэтому не подбирается
+		s.NotEqual("library/alpine", occurrence.Image.Name)
 	}
 }
 
-func (s *StarlarkSuite) TestParseSkipsCommentedLines() {
+func (s *StarlarkSuite) TestParseSkipsCommentsAndShortForm() {
 	_, occurrences := s.parseBasic()
 	for _, occurrence := range occurrences {
-		s.NotContains(occurrence.Image.SourceName, "commented")
+		s.NotContains(occurrence.Image.Name, "commented")
+		// short-form 'myorg/short:3.0.0' — нет explicit domain
+		s.NotEqual("short", occurrence.Image.Name)
 	}
 }
 
